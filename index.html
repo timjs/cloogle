@@ -1,8 +1,3 @@
-<?php
-$file = fopen("visitors.txt", "a");
-fwrite($file, sprintf("%u\t%s\n", time(), $_SERVER['HTTP_USER_AGENT']));
-fclose($file);
-?>
 <!DOCTYPE html>
 <html>
 <head>

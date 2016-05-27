@@ -5,6 +5,8 @@ define('SERVER_PORT', 31215);
 define('E_CLOOGLEDOWN', 150);
 define('E_ILLEGALMETHOD', 151);
 define('E_ILLEGALREQUEST', 152);
+define("VISITORFILE", "visitors.txt");
+
 
 if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 	echo json_encode(array(
@@ -17,6 +19,10 @@ if($_SERVER['REQUEST_METHOD'] !== 'GET'){
 		"data" => array(),
 		"msg" => "GET variable 'str' should be set"));
 } else {
+	$file = fopen(VISITORFILE, "a");
+	fwrite($file, sprintf("%u\t%s\n", time(), $_SERVER['HTTP_USER_AGENT']));
+	fclose($file);
+
 	$str = array_map('trim', explode('::', $_GET['str']));
 	$name = $str[0];
 	$unify = isset($str[1]) ? $str[1] : '';
