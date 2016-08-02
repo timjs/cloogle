@@ -17,15 +17,15 @@ function getResults(str, page) {
 
 	function highlightCallback(span, cls, str) {
 		if (cls == 'type') {
-			return '<a class="hidden" title="Search :: ' + str + '" href="#' +
+			return '<a class="no-decoration" title="Search :: ' + str + '" href="#' +
 				encodeURIComponent(':: ' + str) + '">' +
 				span + '</a>';
 		} else if (cls == 'classname') {
-			return '<a class="hidden" title="Search class ' + str + '" href="#' +
+			return '<a class="no-decoration" title="Search class ' + str + '" href="#' +
 				encodeURIComponent('class ' + str) + '">' +
 				span + '</a>';
 		} else if (cls == 'generic') {
-			return '<a class="hidden" title="Search generic ' + str + '" href="#' +
+			return '<a class="no-decoration" title="Search generic ' + str + '" href="#' +
 				encodeURIComponent(str) + '">' +
 				span + '</a>';
 		} else {
@@ -160,7 +160,7 @@ function getResults(str, page) {
 				sugstr.push(':: ' + sug.unify);
 			}
 			sugstr = sugstr.join(' ');
-			str += '<tr><td><a class="hidden" href="#' + encodeURIComponent(sugstr) + '"><code>' +
+			str += '<tr><td><a class="no-decoration" href="#' + encodeURIComponent(sugstr) + '"><code>' +
 				highlightFunction(sugstr) + '</code></a></td><td>' +
 				suggs[i][1] + ' results</td></tr>';
 		}
@@ -194,9 +194,9 @@ function getResults(str, page) {
 						+ par.innerHTML;
 				}
 			} else {
-				elem.innerHTML =
-					'<p>Return code: ' + responsedata['return'] + '</p>' +
-					'<p>Message: ' + responsedata['msg'] + '</p>';
+				elem.innerHTML = '<div class="alert alert-danger" role="alert">' +
+					'Error #' + responsedata['return'] + ': ' + responsedata['msg'] +
+					'</div>';
 			}
 		}
 	};

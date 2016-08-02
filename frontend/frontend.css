@@ -1,0 +1,58 @@
+body {
+	padding-bottom: 150px;
+}
+
+.container {
+	max-width: 800px;
+}
+
+.header {
+	padding: 15px 0 15px 20px;
+}
+
+.header h3 {
+	line-height: 40px;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+#search_str {
+	font-family: monospace;
+}
+
+code {
+	background: transparent;
+}
+
+pre {
+	background: transparent;
+	border: none;
+}
+
+#helptext code {
+	background-color: #f9f2f4;
+	font-size: 90%;
+	padding: 1px 4px;
+}
+
+a.no-decoration {
+	text-decoration: none;
+}
+
+#suggestions {
+	margin: 10px 0;
+}
+
+#more, #loading {
+	margin-top: 20px;
+}
+
+td.wide {
+	width: 99%;
+}
+
+th {
+	padding-right: 1em;
+	vertical-align: top;
+	white-space: nowrap;
+}
