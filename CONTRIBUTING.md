@@ -43,8 +43,6 @@ We will take immediate action.
 
 - Use tabs instead of spaces
 - Keep lines under 80 chars (except for HTML).
-- When editing the frontend, do not use external frameworks (jQuery,
-  bootstrap, etc.). We strive for minimality and elegance.
 
 ### Other stuff
 
