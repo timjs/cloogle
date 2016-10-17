@@ -10,6 +10,7 @@ import Data.Maybe
 from Text import class Text(concat), instance Text String
 import Text.JSON
 import Control.Monad
+import GenEq
 
 // CleanTypeUnifier
 import Type
