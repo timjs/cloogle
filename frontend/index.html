@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- dopefishh/cloogle {{{COMMIT}}} -->
+	<title>Cloogle</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta name="description" content="Cloogle is the unofficial Clean language search engine"/>
+	<meta name="keywords" content="Clean,Clean language,Concurrent Clean,search,functions,search engine,programming language,clean platform,iTasks,cloogle,hoogle"/>
+	<script src="clean.js" type="text/javascript" defer="defer"></script>
+	<script src="frontend.js" type="text/javascript" defer="defer"></script>
+	<script src="api.js" type="text/javascript" defer="defer"></script>
+	<link rel="stylesheet" href="clean.css" type="text/css"/>
+	<link rel="stylesheet" href="frontend.css" type="text/css"/>
+</head>
+<body>
+	<p>
+		<a href="https://github.com/dopefishh/cloogle">
+			<img src="logo.jpg" alt="follow link for the sourcecode" />
+		</a>
+	</p>
+	<p>Cloogle is the unofficial <a href="http://clean.cs.ru.nl">Clean</a> language search engine.</p>
+	<p>
+		<a href="javascript:toggle('helptext')">How to use</a> | <a href="javascript:toggle('contributetext')">Contribute</a>
+	</p>
+	<div id="helptext" style="display:none;">
+		<p><b>The following search strings are recognised:</b></p>
+		<table>
+			<tr>
+				<td class='code'>hd</td>
+				<td class='description'>Functions with a name like <code>hd</code></td>
+			</tr>
+			<tr>
+				<td class='code'>:: a [a] -&gt; a</td>
+				<td class='description'>Functions with a type unifiable with <code>a [a] -&gt; a</code></td>
+			</tr>
+			<tr>
+				<td class='code'>hd :: [a] -&gt; a</td>
+				<td class='description'>A combination of the above</td>
+			</tr>
+			<tr>
+				<td class='code'>:: A.a: [a] -&gt; a</td>
+				<td class='description'>Type search, where <code>a</code> cannot be unified.</td>
+			</tr>
+			<tr>
+				<td class='code'>type Maybe</td>
+				<td class='description'>The type definition of <code>Maybe x</code></td>
+			</tr>
+			<tr>
+				<td class='code'>class Text</td>
+				<td class='description'>The class definition of <code>Text</code></td>
+			</tr>
+		</table>
+		<p><b>Besides this web app, there are other frontends available:</b></p>
+		<ul>
+			<li>The <code>!cloogle</code> bang on <a href="https://duckduckgo.com/">DuckDuckGo</a></li>
+			<li><a href="https://telegram.me/CloogleBot">@CloogleBot</a> on Telegram</li>
+			<li><a href="https://github.com/KDercksen/cloogle-cli">cloogle-cli</a>, a command line application</li>
+			<li>The <code>:Cloogle</code> command in Vim, if you use <a href="https://github.com/camilstaps/vim-clean">vim-clean</a></li>
+		</ul>
+	</div>
+	<div id="contributetext" style="display:none;">
+		<p>
+			Development takes place on <a href="https://github.com/dopefishh/cloogle">GitHub</a>.
+			Please read the <a href="https://github.com/dopefishh/cloogle/blob/master/CONTRIBUTING.md">contributing guidelines</a> first.
+		</p>
+		<p>
+			For bug reports, open an issue in the <a href="https://github.com/dopefishh/cloogle/issues">issue tracker</a>.
+		</p>
+	</div>
+	<form id="search_form" action="#">
+		<div id="search_str_container">
+			<pre id="search_str_highlight" class="search_str"></pre>
+			<input type="text" id="search_str" class="search_str" placeholder="fix :: (a -> a) -> a" />
+			<br style="clear:both;"/>
+		</div>
+		<input type="submit" value="Search" />
+		&nbsp;
+		<label><input type="checkbox" id="search_advanced"/> advanced</label>
+		<div id="advanced" style="display:none;">
+			<h4 style="margin:1em 0 .2em;">Libraries</h4>
+			<select multiple="multiple" size="10" id="search_libs">
+				<optgroup label="Clean 2.4">
+					<option selected="selected" value="__builtin">Language builtins</option>
+					<option selected="selected" value="StdEnv">StdEnv</option>
+					<option selected="selected" value="StdLib">StdLib</option>
+					<option selected="selected" value="ArgEnv">ArgEnv</option>
+					<option selected="selected" value="Directory">Directory</option>
+					<option selected="selected" value="Dynamics">Dynamics</option>
+					<option selected="selected" value="Gast">Gast</option>
+					<option selected="selected" value="Generics">Generics</option>
+					<option selected="selected" value="MersenneTwister">MersenneTwister</option>
+					<option selected="selected" value="TCPIP">TCPIP</option>
+				</optgroup>
+				<optgroup label="clean-platform">
+					<option selected="selected" value="clean-platform/OS-Independent">clean-platform/OS-Independent</option>
+					<option selected="selected" value="clean-platform/OS-Linux">clean-platform/OS-Linux</option>
+					<option selected="selected" value="clean-platform/OS-Linux-32">clean-platform/OS-Linux-32</option>
+					<option selected="selected" value="clean-platform/OS-Linux-64">clean-platform/OS-Linux-64</option>
+					<option selected="selected" value="clean-platform/OS-Mac">clean-platform/OS-Mac</option>
+					<option selected="selected" value="clean-platform/OS-Posix">clean-platform/OS-Posix</option>
+					<option selected="selected" value="clean-platform/OS-Windows">clean-platform/OS-Windows</option>
+					<option selected="selected" value="clean-platform/OS-Windows-32">clean-platform/OS-Windows-32</option>
+					<option selected="selected" value="clean-platform/OS-Windows-64">clean-platform/OS-Windows-64</option>
+				</optgroup>
+				<optgroup label="iTasks">
+					<option selected="selected" value="iTasks-SDK/Dependencies/graph_copy">iTasks-SDK/Dependencies/graph_copy</option>
+					<option selected="selected" value="iTasks-SDK/Dependencies/clean-sapl/src">iTasks-SDK/Dependencies/clean-sapl/src</option>
+					<option selected="selected" value="iTasks-SDK/Server">iTasks-SDK/Server</option>
+					<option selected="selected" value="iTasks-SDK/Tests">iTasks-SDK/Tests</option>
+				</optgroup>
+				<optgroup label="Miscellaneous">
+					<option value="SoccerFun">SoccerFun</option>
+				</optgroup>
+			</select>
+		</div>
+	</form>
+	<div id="search_results"></div>
+</body>
+</html>

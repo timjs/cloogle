@@ -1,7 +1,16 @@
-#helptext code {
+#helptext {
+	margin-bottom: 1em;
+}
+
+#helptext code, #helptext .code {
 	background-color: #f9f2f4;
+	font-family: monospace;
 	font-size: 90%;
 	padding: 1px 4px;
+}
+
+#helptext td.description {
+	padding-left: 1em;
 }
 
 a.hidden {
@@ -10,6 +19,17 @@ a.hidden {
 
 #suggestions {
 	margin: 10px 0;
+}
+
+td.wide {
+	width: 99%;
+}
+
+th {
+	padding-right: 1em;
+	text-align: left;
+	vertical-align: top;
+	white-space: nowrap;
 }
 
 #search_str_container {

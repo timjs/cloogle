@@ -1,56 +1,69 @@
-# cloogle
+# Cloogle
 
-A Clean hoogle clone. Use at your own risk. You can use any of the available
-frontends:
+A Clean hoogle clone: search for functions, types, and classes from the Clean
+standard libraries.
 
-- Live version available at [cloogle.org](http://cloogle.org/)
-- On DuckDuckGo with the `!cloogle` bang.
-- Using [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
-  [camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot))
-- Using the CLI implementation at
-  [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli)
+Use any of the available frontends:
 
-### Current features
-- Search for function/operator/class member names.
-- Search for function types.
-- Search for type definitions.
+- Web app at [cloogle.org](https://cloogle.org/).
+- The `!cloogle` bang on DuckDuckGo.
+- [@CloogleBot](https://telegram.me/CloogleBot) on Telegram (see
+	[camilstaps/CloogleBot](https://github.com/camilstaps/CloogleBot)).
+- [KDercksen/cloogle-cli](https://github.com/KDercksen/cloogle-cli), a command
+	line interface to the api.
+- The `:Cloogle` command in
+	[camilstaps/vim-clean](https://github.com/camilstaps/vim-clean).
 
-### How to setup
+---
 
-- The frontend heavily depends on [VanillaJS](http://vanilla-js.com/) so you
-	should have a browser that supports it.
+### Readme contents
 
-- Add `env/envs.linux64` to your `$CLEAN_HOME/etc/IDEEnvs`.
+- [Setup](#setup)
+- [API specification of the PHP wrapper](#api-specification-for-developers)
+- [API specification of the Clean backend](#talking-with-the-clean-backend-directly)
+- [Statistics](#statistics)
+- [Authors](#authors)
+- [Copyright &amp; License](#copyright--license)
 
-- Run `make`. This builds all necessary binaries and runs `builddb`, which
-	creates a file `types.db` which holds the internal database of functions and
-	their types. If you add new libraries later on, you need to rerun `builddb`.
+---
 
-- You can then run the Clean backend with:
+## Setup
 
-		$ ./CloogleServer 31215 < types.db
+After installing
+[docker-compose](https://www.docker.com/products/docker-compose) run the
+following command:
 
-	Alternatively, use `serve` as a wrapper. It will restart the server on
-	crashes, and log to both stdout and cloogle.log:
+```bash
+docker-compose up
+```
 
-		$ ./serve
+Your Cloogle server now runs at port `31215` on your local machine.
+The web frontend is available at port `80`, live statistics at port `31216`.
 
-	In this example, the server uses port 31215. You need to use the same
-	settings in `api.php`.
+If you intend to run this on a server that has port 80 occupied already, you
+can use nginx as a proxy. Change `80:80` to `31280:80` in `docker-compose.yml`
+and use the following nginx config:
 
-	Leave the `CloogleServer` running. When a HTTP request for `api.php` is made,
-	that PHP script will communicate with the Clean backend server.
+```nginx
+server {
+	listen [::]:80;
+	server_name cloogle.org;
 
-	You may want to consider running the backend server in a sandbox or with
-	limited permissions.
+	location / {
+		proxy_pass http://127.0.0.1:31280;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $remote_addr;
+	}
+}
+```
 
-### Api specification for developers
+## HTTP API specification
 `api.php` should be called with a `GET` request where the `str` variable
 contains the search string. You may also add `mod` (a comma-separated list of
 modules to search in) and `page` (for pagination: 0 for the first *n* results,
 1 for the next *n*, etc.).
 
-The api will return a JSON formatted data structure containing the following
+The API will return a JSON formatted data structure containing the following
 fields:
 
 - `return`
@@ -60,10 +73,12 @@ fields:
 	* `0`: success
 	* `127`: no results
 	* `128`: ununderstandable input (usually shouldn't happen)
-	* `129`: function name too long
+	* `129`: invalid name field
+	* `130`: couldn't parse unify field as a type
 	* `150`: the Clean backend could not be reached
 	* `151`: invalid request type (should use GET)
 	* `152`: no input (GET variable `str` should be set to the search string)
+	* `153`: the Clean backend timed out
 
 - `msg`
 
@@ -71,19 +86,22 @@ fields:
 
 - `data`
 
-	An array of search results. A result has the following fields:
+	An array of search results. A result is an array of three elements. The first
+	determines the kind of result. It may be `FunctionResult`, `TypeResult`,
+	`ClassResult` or `MacroResult`. The second contains general data, in
+	particular the following fields:
 
 	* `library`
-	* `filename`
-	* `func`: the function name and type as a string
-	* `unifier`: a list of two lists of type assignments that represents the
-		unification of the searched type to the found type (only when `unify` is
-		not the empty string)
-	* `cls`: if the function is a class member, this contains `cls_name` and
-		`cls_vars` and represents the class it was found in
 	* `modul`: the module the result was found in (not a typo)
+	* `filename`: the filename of the definition module
+	* `dcl_line`: the line where the definition is found
 	* `distance`: the distance measure we use to sort the results (lower is
 		better)
+
+	The third element of the array contains data specific to the kind of result.
+	It is easiest to look in `CloogleServer.icl` at the types
+	`FunctionResultExtras`, `TypeResultExtras`, `ClassResultExtras` and
+	`MacroResultExtras` to get an idea of the fields that may be returned.
 
 - `more_available`
 
@@ -91,35 +109,35 @@ fields:
 	the number of results that have a higher distance than the last result sent.
 	If there are no more results, this field *may* be zero or may not be present.
 
-### Talking with the Clean backend directly
-`CloogleServer` is a TCP server listening on port 31215 (typically). Send a
-JSON request with the following fields:
+- `suggestions`
 
-* `unify`, the type to search for as a string (or the empty string)
-* `name`, the name of the function to search for (or the empty string)
-* `modules`, a list of names of modules to search in (*optional*)
-* `page`: 0 for the first *n* results, 1 for the next *n*, etc. (*optional*)
+	If there are similar searches that may return more results, this will be an
+	array of two-tuples with the alternative search (which has the same fields as
+	a request) and the number of results.
+
+## TCP API Specification
+`CloogleServer` is a TCP server listening on port 31215 (typically). Send a
+JSON request with at least one of the following fields:
+
+* `unify`, the type to search for as a string.
+* `name`, the name of the function to search for.
+* `className`, the name of the class to search for.
+* `typeName`, the name of the type to search for.
+* `libraries`, a list of two elements:
+	* A list of names of libraries to search in
+	* A boolean, whether language builtins should be searched or not.
+* `modules`, a list of names of modules to search in.
+* `page`: 0 for the first *n* results, 1 for the next *n*, etc.
+
+All fields are optional. If `className` is present, `unify` and `name` will be
+ignored. If `typeName` is present (and `className` is not), `unify` and `name`
+will be ignored.
 
 The Clean backend will return a JSON string, similar to the output of the PHP
 script described above. The error codes above 150 are specific to the script
 and cannot be returned by the Clean backend.
 
-### Live statistics
-There is a possibility to set up a web page that shows live statistics.
-Currently, only the last few searches are shown. For this, you need to have
-`nodejs` installed. Then do:
-
-    $ cd stats
-    $ npm install
-
-And to run:
-
-    $ node server.js ../cloogle.log
-
-This starts a WebSocket server on port 31216. You can navigate to `/stats` to
-view the statistics. This page will receive live updates.
-
-### Authors
+## Authors
 
 Maintainers:
 
@@ -130,28 +148,7 @@ Contributors:
 
 - [KDercksen](https://github.com/KDercksen) (searching on module; help text)
 
-### Licence
+## Copyright &amp; License
 
-```
-The MIT License (MIT)
-
-Copyright (c) <2016> <Mart Lubbers and Camil Staps>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+Copyright &copy; Mart Lubbers and Camil Staps.
+Licensed under MIT; See the `LICENSE` file.

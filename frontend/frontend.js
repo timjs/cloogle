@@ -1,24 +1,69 @@
 var form_str = document.getElementById('search_str');
+var form_libs = document.getElementById('search_libs');
 var sform = document.getElementById('search_form');
 var sresults = document.getElementById('search_results');
+var advanced_checkbox = document.getElementById('search_advanced');
+var refresh_on_hash = true;
 
 function toggle(name) {
 	var e = document.getElementById(name);
-	if (e.style.display=="block")
-		e.style.display="none";
-	else
-		e.style.display="block";
+	e.style.display = e.style.display == 'block' ? 'none' : 'block';
+}
+
+function getLibs() {
+	if (!advanced_checkbox.checked)
+		return [];
+
+	var builtin = false;
+	var libs = [];
+	for (var i = 0; i < form_libs.length; i++) {
+		if (form_libs[i].selected) {
+			if (form_libs[i].value == '__builtin')
+				builtin = true;
+			else
+				libs.push(form_libs[i].value);
+		}
+	}
+
+	return [libs, builtin];
 }
 
 function formsubmit() {
-	if (form_str.value === '') {
+	var q = form_str.value;
+	if (q === '') {
 		sresults.innerHTML = 'Can\'t search for the empty string';
 	} else {
-		sresults.innerHTML = '<div id="page-0"></div>';
-		getResults(form_str.value, 0);
+		sresults.innerHTML = '';
+
+		if (q.indexOf('::') == -1 && q.indexOf('->') != -1) {
+			var sug = ':: ' + q.replace('->', ' -> ');
+			sresults.innerHTML = '<p>' +
+				'Searching for <code>' + highlightFunction(q) + '</code>. ' +
+				'Did you mean to search for ' +
+				'<a class="hidden" href="#' + sug + '"><code>' +
+				highlightFunction(sug) + '</code></a>?</p>';
+		}
+
+		var libs = getLibs();
+		sresults.innerHTML += '<div id="page-0"></div>';
+		getResults(q, libs, 0);
 	}
 	return false;
 };
+
+advanced_checkbox.onchange = function () {
+	toggle('advanced');
+}
+
+window.onhashchange = function () {
+	if (!refresh_on_hash) {
+		refresh_on_hash = true;
+	} else {
+		var str = decodeURIComponent(document.location.hash);
+		form_str.value = str.substring(1);
+		formsubmit();
+	}
+}
 
 window.onload = function() {
 	sform.onsubmit = formsubmit;
@@ -29,11 +74,14 @@ window.onload = function() {
 		formsubmit();
 	}
 
+	if (advanced_checkbox.checked)
+		advanced_checkbox.onchange();
+
 	document.getElementById('search_str').focus();
 
 	var caretOffset = 0;
 	
-	function updateCaret() {
+	var updateCaret = function() {
 		var search = form_str;
 		var caret = document.getElementById('caret');
 		var caretOffset = search.selectionStart;
@@ -64,15 +112,5 @@ window.onload = function() {
 	}
 	form_str.onfocus = function() {
 		document.getElementById('caret').style.display = 'inline';
-	}
-}
-
-window.onhashchange = function() {
-	if (!refresh_on_hash) {
-		refresh_on_hash = true;
-	} else {
-		var str = decodeURIComponent(document.location.hash);
-		form_str.value = str.substring(1);
-		formsubmit();
 	}
 }
