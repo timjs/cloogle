@@ -9,6 +9,7 @@ import Data.Map
 import Data.Maybe
 from Text import class Text(concat), instance Text String
 import Text.JSON
+import Control.Monad
 
 // CleanTypeUnifier
 import Type
@@ -47,11 +48,8 @@ where
 	       , derivemap   = newMap
 	       }
 
-instance < (Maybe a) | < a
-where
-	(<) (Just a) (Just b) = a < b
-	(<) (Just _) Nothing  = True
-	(<) Nothing  _        = False
+instance < (Maybe a) | < a 
+where (<) ma mb = maybe False (\a->maybe False (\b->a<b) mb) ma
 
 instance < Location
 where
@@ -61,8 +59,7 @@ where
 	(<) (Builtin a)        (Builtin b)        = a < b
 
 instance == Location
-where
-	(==) a b = gEq{|*|} a b
+where (==) a b = a === b
 
 instance zero TypeExtras
 where
