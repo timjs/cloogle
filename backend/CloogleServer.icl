@@ -20,8 +20,9 @@ from Text import class Text(concat,trim,indexOf,toLowerCase),
 
 import System.Time
 
+import qualified Regex
+
 from SimpleTCPServer import :: LogMessage{..}, serve, :: Logger
-import qualified SimpleTCPServer
 import TypeDB
 import Type
 import Cache
@@ -238,20 +239,21 @@ where
 			# types = findType typeName db
 			= [makeTypeResult (Just typeName) l td db \\ (l,td) <- types]
 		# mbType = prepare_unification True <$> (unify >>= parseType o fromString)
+		# mbName = name >>= 'Regex'.compile o fromString
 		// Search normal functions
 		# filts = catMaybes [ (\t _ -> isUnifiable t) <$> mbType
-		                    , (\n loc _ -> isNameMatch (size n*2/3) n loc) <$> name
+		                    , (\n loc _ -> isNameMatch n loc) <$> mbName
 		                    ]
 		# funs = map (\f -> makeFunctionResult name mbType Nothing f db) $ findFunction`` filts db
 		// Search macros
-		# macros = case (isNothing mbType,name) of
-			(True,Just n) = findMacro` (\loc _ -> isNameMatch (size n*2/3) n loc) db
-			_             = []
+		# macros = case (isNothing mbType, mbName) of
+			(True, Just n) = findMacro` (\loc _ -> isNameMatch n loc) db
+			_              = []
 		# macros = map (\(lhs,rhs) -> makeMacroResult name lhs rhs) macros
 		// Search class members
 		# filts = catMaybes [ (\t _ _ _ _->isUnifiable t) <$> mbType
 		                    , (\n (Location lib mod _ _) _ _ f _ -> isNameMatch
-		                      (size n*2/3) n (Location lib mod Nothing f)) <$> name
+		                      n (Location lib mod Nothing f)) <$> mbName
 		                    ]
 		# members = findClassMembers`` filts db
 		# members = map (\(Location lib mod line cls,vs,_,f,et) -> makeFunctionResult name mbType
@@ -441,10 +443,8 @@ where
 	isUnifiable :: Type ExtendedType -> Bool
 	isUnifiable t1 (ET t2 _) = isJust (unify [] t1 (prepare_unification False t2))
 
-	isNameMatch :: !Int !String Location -> Bool
-	isNameMatch maxdist n1 loc
-		# (n1, n2) = ({toLower c \\ c <-: n1}, {toLower c \\ c <-: getName loc})
-		= n1 == "" || indexOf n1 n2 <> -1 || levenshtein [c \\ c <-: n1] [c \\ c <-: n2] <= maxdist
+	isNameMatch :: !'Regex'.Regex Location -> Bool
+	isNameMatch r loc = not $ isEmpty $ 'Regex'.match r $ fromString $ getName loc
 
 	isModMatch :: ![String] Location -> Bool
 	isModMatch mods (Location _ mod _ _) = isMember mod mods

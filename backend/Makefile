@@ -15,6 +15,7 @@ CLMFLAGS:=-dynamics -h 40M -nr -nt\
 	-I CleanTypeUnifier\
 	-I CleanLevenshtein\
 	-I CleanPrettyPrint\
+	-I CleanRegex\
 	-I clean-compiler/frontend\
 	-I clean-compiler/backend\
 	-I clean-compiler/main\

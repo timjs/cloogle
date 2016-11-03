@@ -7,3 +7,6 @@
 [submodule "backend/clean-platform"]
 	path = backend/clean-platform
 	url = https://gitlab.science.ru.nl/clean-and-itasks/clean-platform.git
+[submodule "backend/CleanRegex"]
+	path = backend/CleanRegex
+	url = https://github.com/camilstaps/CleanRegex
